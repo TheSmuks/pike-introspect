@@ -49,8 +49,9 @@ mixed to_jsonable(mixed val) {
 string json_describe(mixed val) {
   mixed introspect = master()->resolv("Introspect");
   if (!introspect) return UNDEFINED;
-  function describe_fn = introspect->describe;
-  if (!describe_fn) return UNDEFINED;
+  
+  function describe_fn = introspect["describe"];
+  if (!functionp(describe_fn)) return UNDEFINED;
   
   mapping desc = describe_fn(val);
   return Standards.JSON.encode(to_jsonable(desc));
@@ -63,8 +64,9 @@ string json_describe(mixed val) {
 string json_environment() {
   mixed introspect = master()->resolv("Introspect");
   if (!introspect) return UNDEFINED;
-  function env_fn = introspect->environment_summary;
-  if (!env_fn) return UNDEFINED;
+  
+  function env_fn = introspect["environment_summary"];
+  if (!functionp(env_fn)) return UNDEFINED;
   
   mapping env = env_fn();
   return Standards.JSON.encode(to_jsonable(env));
@@ -80,8 +82,9 @@ string json_environment() {
 string json_search(string pattern) {
   mixed introspect = master()->resolv("Introspect");
   if (!introspect) return UNDEFINED;
-  function search_fn = introspect->search_symbols;
-  if (!search_fn) return UNDEFINED;
+  
+  function search_fn = introspect["search_symbols"];
+  if (!functionp(search_fn)) return UNDEFINED;
   
   mapping results = search_fn(pattern);
   return Standards.JSON.encode(to_jsonable(results));
@@ -97,8 +100,9 @@ string json_search(string pattern) {
 string json_module(string name) {
   mixed introspect = master()->resolv("Introspect");
   if (!introspect) return UNDEFINED;
-  function desc_fn = introspect->describe_module_full;
-  if (!desc_fn) return UNDEFINED;
+  
+  function desc_fn = introspect["describe_module_full"];
+  if (!functionp(desc_fn)) return UNDEFINED;
   
   mapping desc = desc_fn(name);
   if (!desc) return UNDEFINED;
@@ -116,9 +120,9 @@ string json_program(string path) {
   mixed introspect = master()->resolv("Introspect");
   if (!introspect) return UNDEFINED;
   
-  function res_fn = introspect->resolve_program;
-  function desc_fn = introspect->describe_program;
-  if (!res_fn || !desc_fn) return UNDEFINED;
+  function res_fn = introspect["resolve_program"];
+  function desc_fn = introspect["describe_program"];
+  if (!functionp(res_fn) || !functionp(desc_fn)) return UNDEFINED;
   
   program p = res_fn(path);
   if (!p) return UNDEFINED;
@@ -134,8 +138,9 @@ string json_program(string path) {
 string json_list_modules() {
   mixed introspect = master()->resolv("Introspect");
   if (!introspect) return UNDEFINED;
-  function list_fn = introspect->list_modules;
-  if (!list_fn) return UNDEFINED;
+  
+  function list_fn = introspect["list_modules"];
+  if (!functionp(list_fn)) return UNDEFINED;
   
   array mods = list_fn();
   return Standards.JSON.encode(mods);
@@ -152,9 +157,9 @@ string json_function(string path) {
   mixed introspect = master()->resolv("Introspect");
   if (!introspect) return UNDEFINED;
   
-  function res_fn = introspect->resolve_function;
-  function desc_fn = introspect->describe_function;
-  if (!res_fn || !desc_fn) return UNDEFINED;
+  function res_fn = introspect["resolve_function"];
+  function desc_fn = introspect["describe_function"];
+  if (!functionp(res_fn) || !functionp(desc_fn)) return UNDEFINED;
   
   function f = res_fn(path);
   if (!f) return UNDEFINED;
