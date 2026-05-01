@@ -11,7 +11,10 @@
 //!
 //! @section
 
-inherit .Discover;
+// Inherit in specific order to ensure dependencies are resolved correctly.
+// Json.pmod is inherited first because it doesn't depend on other modules.
+// Describe, Search, and Discover have no circular dependencies.
+inherit .Json;
 inherit .Describe;
 inherit .Search;
-inherit .Json;
+inherit .Discover;
