@@ -1,5 +1,8 @@
 // Introspect.pmod/module.pmod
-// Namespace module that inherits all sub-modules
+// Main namespace module
+// Pike module path should include src/ directory
+
+#pike __REAL_VERSION__
 
 //! The Introspect module provides runtime introspection and discovery
 //! capabilities for Pike. It allows LLM agents to explore the Pike runtime
@@ -8,7 +11,7 @@
 //!
 //! @section
 
-inherit .Discover : Discover;
-inherit .Describe : Describe;
-inherit .Search : Search;
-inherit .Json : Json;
+inherit .Discover;
+inherit .Describe;
+inherit .Search;
+inherit .Json;
