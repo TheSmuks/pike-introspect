@@ -58,13 +58,17 @@ array(string) search_programs(string pattern) {
   array(string) results = ({});
   string pat = lower_case(pattern);
 
-  // Search through known modules
+  // Search through known modules, skipping problematic ones
   foreach(sort(indices(STD_LIBS)), string modname) {
+    // Skip known problematic modules
+    if (modname == "Tools") continue;
+    
     mixed mod = master()->resolv(modname);
     if (!mod) continue;
 
     array idx = ({});
     catch { idx = indices(mod); };
+    if (!arrayp(idx)) continue;
 
     foreach(idx, string sym) {
       mixed val;
@@ -91,11 +95,15 @@ array(string) search_functions(string pattern) {
 
   // Search through known modules
   foreach(sort(indices(STD_LIBS)), string modname) {
+    // Skip known problematic modules
+    if (modname == "Tools") continue;
+    
     mixed mod = master()->resolv(modname);
     if (!mod) continue;
 
     array idx = ({});
     catch { idx = indices(mod); };
+    if (!arrayp(idx)) continue;
 
     foreach(idx, string sym) {
       mixed val;
