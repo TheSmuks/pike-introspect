@@ -5,9 +5,8 @@
 
 //! Functions for producing JSON output suitable for LLM consumption.
 //!
-//! This module inherits all functions from Discover, Describe, and Search
-//! through the parent module.pmod. Functions are accessed directly without
-//! needing explicit imports.
+//! This module provides functions to encode introspection results as JSON.
+//! It uses direct function calls via master()->resolv() to avoid inheritance issues.
 
 //! Convert any value to a JSON-encodable representation.
 //!
@@ -48,9 +47,14 @@ mixed to_jsonable(mixed val) {
 //! @returns
 //!   JSON-encoded description string.
 string json_describe(mixed val) {
-  mapping desc = describe(val);
-  mixed jsonable = to_jsonable(desc);
-  return Standards.JSON.encode(jsonable);
+  // Get describe function from the parent Introspect module
+  mixed introspect = master()->resolv("Introspect");
+  if (!introspect) return UNDEFINED;
+  function describe_fn = introspect->describe;
+  if (!describe_fn) return UNDEFINED;
+  
+  mapping desc = describe_fn(val);
+  return Standards.JSON.encode(to_jsonable(desc));
 }
 
 //! Get JSON representation of the Pike environment.
@@ -58,7 +62,12 @@ string json_describe(mixed val) {
 //! @returns
 //!   JSON-encoded environment summary.
 string json_environment() {
-  mapping env = environment_summary();
+  mixed introspect = master()->resolv("Introspect");
+  if (!introspect) return UNDEFINED;
+  function env_fn = introspect->environment_summary;
+  if (!env_fn) return UNDEFINED;
+  
+  mapping env = env_fn();
   return Standards.JSON.encode(to_jsonable(env));
 }
 
@@ -70,7 +79,12 @@ string json_environment() {
 //! @returns
 //!   JSON-encoded search results.
 string json_search(string pattern) {
-  mapping results = search(pattern);
+  mixed introspect = master()->resolv("Introspect");
+  if (!introspect) return UNDEFINED;
+  function search_fn = introspect->search;
+  if (!search_fn) return UNDEFINED;
+  
+  mapping results = search_fn(pattern);
   return Standards.JSON.encode(to_jsonable(results));
 }
 
@@ -82,7 +96,12 @@ string json_search(string pattern) {
 //! @returns
 //!   JSON-encoded module description.
 string json_module(string name) {
-  mapping desc = describe_module_full(name);
+  mixed introspect = master()->resolv("Introspect");
+  if (!introspect) return UNDEFINED;
+  function desc_fn = introspect->describe_module_full;
+  if (!desc_fn) return UNDEFINED;
+  
+  mapping desc = desc_fn(name);
   if (!desc) return UNDEFINED;
   return Standards.JSON.encode(to_jsonable(desc));
 }
@@ -95,9 +114,17 @@ string json_module(string name) {
 //! @returns
 //!   JSON-encoded program description, or UNDEFINED if not found.
 string json_program(string path) {
-  program|void p = resolve_program(path);
+  mixed introspect = master()->resolv("Introspect");
+  if (!introspect) return UNDEFINED;
+  
+  function res_fn = introspect->resolve_program;
+  function desc_fn = introspect->describe_program;
+  if (!res_fn || !desc_fn) return UNDEFINED;
+  
+  program p = res_fn(path);
   if (!p) return UNDEFINED;
-  mapping desc = describe_program(p);
+  
+  mapping desc = desc_fn(p);
   return Standards.JSON.encode(to_jsonable(desc));
 }
 
@@ -106,7 +133,12 @@ string json_program(string path) {
 //! @returns
 //!   JSON-encoded array of module names.
 string json_list_modules() {
-  array mods = list_modules();
+  mixed introspect = master()->resolv("Introspect");
+  if (!introspect) return UNDEFINED;
+  function list_fn = introspect->list_modules;
+  if (!list_fn) return UNDEFINED;
+  
+  array mods = list_fn();
   return Standards.JSON.encode(mods);
 }
 
@@ -118,8 +150,16 @@ string json_list_modules() {
 //! @returns
 //!   JSON-encoded function description, or UNDEFINED if not found.
 string json_function(string path) {
-  function|void f = resolve_function(path);
+  mixed introspect = master()->resolv("Introspect");
+  if (!introspect) return UNDEFINED;
+  
+  function res_fn = introspect->resolve_function;
+  function desc_fn = introspect->describe_function;
+  if (!res_fn || !desc_fn) return UNDEFINED;
+  
+  function f = res_fn(path);
   if (!f) return UNDEFINED;
-  mapping desc = describe_function(f);
+  
+  mapping desc = desc_fn(f);
   return Standards.JSON.encode(to_jsonable(desc));
 }
