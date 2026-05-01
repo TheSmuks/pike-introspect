@@ -1,0 +1,10 @@
+{
+  "name": "Introspect",
+  "version": "0.1.0",
+  "description": "Pike runtime introspection module for LLM agents",
+  "keywords": ["pike", "introspection", "llm", "discovery"],
+  "license": "MIT",
+  "author": "TheSmuks",
+  "repository": "github:TheSmuks/pike-introspect",
+  "dependencies": {}
+}
