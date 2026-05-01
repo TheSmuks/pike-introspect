@@ -5,7 +5,7 @@
 
 //! Functions for searching symbols by pattern.
 
-private constant STD_LIBS = (<
+constant STD_LIBS = (<
   "Stdio", "Standards", "Protocols", "Math", "Thread", "Crypto",
   "Image", "GTK2", "GL", "SQL", "Calendar", "Tools", "Val", "Gmp",
   "Parser", "ADT", "Concurrent", "Sql"
@@ -18,7 +18,7 @@ private constant STD_LIBS = (<
 //!
 //! @returns
 //!   Mapping with arrays of matching modules, programs, and functions.
-mapping search(string pattern) {
+mapping search_symbols(string pattern) {
   return ([ 
     "modules": search_modules(pattern),
     "programs": search_programs(pattern),

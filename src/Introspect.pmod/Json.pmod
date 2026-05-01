@@ -47,7 +47,6 @@ mixed to_jsonable(mixed val) {
 //! @returns
 //!   JSON-encoded description string.
 string json_describe(mixed val) {
-  // Get describe function from the parent Introspect module
   mixed introspect = master()->resolv("Introspect");
   if (!introspect) return UNDEFINED;
   function describe_fn = introspect->describe;
@@ -81,7 +80,7 @@ string json_environment() {
 string json_search(string pattern) {
   mixed introspect = master()->resolv("Introspect");
   if (!introspect) return UNDEFINED;
-  function search_fn = introspect->search;
+  function search_fn = introspect->search_symbols;
   if (!search_fn) return UNDEFINED;
   
   mapping results = search_fn(pattern);
