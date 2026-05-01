@@ -69,9 +69,7 @@ mapping describe_array(array arr) {
 mapping describe_mapping(mapping m) {
   return ([ 
     "type": "mapping",
-    "size": sizeof(m),
-    "key_types": ({}),
-    "value_types": ({})
+    "size": sizeof(m)
   ]);
 }
 
@@ -134,7 +132,6 @@ mapping describe_program(program p) {
   string name = sprintf("%O", p);
   array(string) methods = ({});
   array(string) constants = ({});
-  array(string) inherits = ({});
 
   // Try to enumerate members by creating an instance
   object inst = UNDEFINED;
@@ -161,9 +158,7 @@ mapping describe_program(program p) {
     "name": name,
     "type": "program",
     "methods": sort(methods),
-    "constants": sort(constants),
-    "inherits": sort(inherits),
-    "program_identifier": UNDEFINED
+    "constants": sort(constants)
   ]);
 }
 
@@ -180,8 +175,7 @@ mapping describe_function(function f) {
   return ([ 
     "name": name,
     "type": "function",
-    "signature": name,  // %O already gives a good signature
-    "module": UNDEFINED
+    "signature": name
   ]);
 }
 
@@ -195,7 +189,6 @@ mapping describe_function(function f) {
 mapping describe_object(object o) {
   program p = object_program(o);
   array(string) methods = ({});
-  array(string) constants = ({});
   array(string) variables = ({});
 
   array idx = ({});
@@ -213,11 +206,9 @@ mapping describe_object(object o) {
 
   return ([ 
     "program": sprintf("%O", p),
-    "program_name": sprintf("%O", p),
     "type": "object",
     "methods": sort(methods),
-    "variables": sort(variables),
-    "constants": sort(constants)
+    "variables": sort(variables)
   ]);
 }
 
@@ -235,7 +226,6 @@ mapping describe_module_full(string name) {
   array(string) programs = ({});
   array(string) functions = ({});
   array(string) constants = ({});
-  array(string) submodules = ({});
   array(string) objects = ({});
 
   array idx = ({});
@@ -264,7 +254,6 @@ mapping describe_module_full(string name) {
     "functions": sort(functions),
     "objects": sort(objects),
     "constants": sort(constants),
-    "submodules": sort(submodules),
     "total_symbols": sizeof(idx)
   ]);
 }
@@ -292,9 +281,6 @@ mapping environment_summary() {
 
   return ([ 
     "pike_version": __VERSION__,
-    "pike_version_major": __VERSION_MAJOR__,
-    "pike_version_minor": __VERSION_MINOR__,
-    "pike_version_patch": __VERSION_PATCH__,
     "module_count": sizeof(modules),
     "modules": sort(modules),
     "stdlib_modules": sort(indices(STD_LIBS)),
