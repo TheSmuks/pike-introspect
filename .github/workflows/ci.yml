@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Pike
+        run: |
+          curl -LsSf https://pike.lysator.liu.se/pub/pike/latest-stable/install | sh
+          echo "$HOME/.local/share/pike/bin" >> $GITHUB_PATH
+
+      - name: Install PMP
+        run: |
+          curl -LsSf https://github.com/TheSmuks/pmp/install.sh | sh
+          echo "$HOME/.pmp/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          pmp install
+
+      - name: Syntax check
+        run: |
+          pike -M src -c src/Introspect.pmod/module.pmod 2>&1 || exit 1
+          pike -M src -c src/Introspect.pmod/Discover.pmod 2>&1 || exit 1
+          pike -M src -c src/Introspect.pmod/Describe.pmod 2>&1 || exit 1
+          pike -M src -c src/Introspect.pmod/Search.pmod 2>&1 || exit 1
+          pike -M src -c src/Introspect.pmod/Json.pmod 2>&1 || exit 1
+
+      - name: Run tests
+        run: |
+          pike -M src -M modules tests/run_tests.pike tests/pike
