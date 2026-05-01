@@ -1,6 +1,8 @@
 // Introspect.pmod/Discover.pmod
 // Module, program, function, and constant discovery
 
+#pike __REAL_VERSION__
+
 //! Functions for discovering modules, programs, functions, and constants
 //! in the Pike runtime environment.
 
@@ -17,8 +19,6 @@ private constant STD_LIBS = (<
   "GL",
   "GLU",
   "GLUT",
-  "SDL",
-  "Cantor",
   "SQL",
   "Curl",
   "Git",
@@ -31,7 +31,8 @@ private constant STD_LIBS = (<
   "Bzip2",
   "Zlib",
   "Exif",
-  "Cbor",n  "YAML",
+  "Cbor",
+  "YAML",
   "Parser",
   "Process",
   "System",
@@ -48,31 +49,25 @@ private constant STD_LIBS = (<
 >);
 
 // Cache for list_modules results
-private array(string) cached_modules = ();
+private array(string) cached_modules = ({});
 private int cache_valid = 0;
 
 //! List all importable modules in the current Pike environment.
 //!
 //! @returns
 //!   Array of module names that can be imported.
-//!
-//! @example
-//!   array(string) mods = Discover.list_modules();
-//!   // Returns: ({ "Stdio", "Standards", "Protocols", ... })
-array(string) list_modules()
-{
+array(string) list_modules() {
   if (cache_valid && sizeof(cached_modules) > 0)
     return cached_modules;
-  
+
   array(string) modules = ({});
-  
+
   // Add stdlib modules that can be resolved
   foreach(sort(indices(STD_LIBS)), string name) {
-    if (catch(master()->resolv(name)))
-      continue;
-    modules += ({ name });
+    if (!catch(master()->resolv(name)))
+      modules += ({ name });
   }
-  
+
   // Try to find modules from all_constants
   mapping c = all_constants();
   foreach(indices(c), string k) {
@@ -87,7 +82,7 @@ array(string) list_modules()
       }
     }
   }
-  
+
   cached_modules = sort(modules);
   cache_valid = 1;
   return cached_modules;
@@ -97,8 +92,7 @@ array(string) list_modules()
 //!
 //! @returns
 //!   Array of known stdlib module names.
-array(string) list_stdlib_modules()
-{
+array(string) list_stdlib_modules() {
   return sort(indices(STD_LIBS));
 }
 
@@ -109,50 +103,40 @@ array(string) list_stdlib_modules()
 //!
 //! @returns
 //!   Mapping with module information, or UNDEFINED if not found.
-//!
-//! @mapping
-//! @member array(string) "programs" Program-valued symbols
-//! @member array(string) "functions" Function-valued symbols  
-//! @member array(string) "constants" Other public symbols
-//! @member array(string) "submodules" Nested module names
-//! @member string "path" Filesystem path (if available)
-//! @member int "is_stdlib" 1 if this is a known stdlib module
-//! @endmapping
-mapping describe_module(string name)
-{
+mapping describe_module(string name) {
   mixed mod = master()->resolv(name);
   if (!mod) return UNDEFINED;
-  
+
   array(string) programs = ({});
   array(string) functions = ({});
   array(string) constants = ({});
   array(string) submodules = ({});
-  
+
   array idx = ({});
   catch { idx = indices(mod); };
-  
+
   foreach(idx, string sym) {
     mixed val;
     catch { val = mod[sym]; };
     if (undefinedp(val)) continue;
-    
+
     if (programp(val)) {
       programs += ({ sym });
     } else if (functionp(val) || callablep(val)) {
       functions += ({ sym });
     } else if (!functionp(val) && !programp(val) && !objectp(val)) {
-      // Only add if it's a simple constant
+      // Only add if it is a simple constant
       constants += ({ sym });
     }
   }
-  
+
   return ([ 
     "name": name,
     "programs": sort(programs),
     "functions": sort(functions),
     "constants": sort(constants),
     "submodules": sort(submodules),
-    "path": UNDEFINED, // Would require additional lookup
+    "path": UNDEFINED,
     "is_stdlib": STD_LIBS[name] ? 1 : 0
   ]);
 }
@@ -164,15 +148,14 @@ mapping describe_module(string name)
 //!
 //! @returns
 //!   Array of program symbol names.
-array(string) list_programs(object|program mod)
-{
+array(string) list_programs(object|program mod) {
   if (!mod) return ({});
-  
+
   array(string) programs = ({});
   array idx = ({});
-  
+
   catch { idx = indices(mod); };
-  
+
   foreach(idx, string sym) {
     mixed val;
     catch { val = mod[sym]; };
@@ -180,7 +163,7 @@ array(string) list_programs(object|program mod)
       programs += ({ sym });
     }
   }
-  
+
   return sort(programs);
 }
 
@@ -191,8 +174,7 @@ array(string) list_programs(object|program mod)
 //!
 //! @returns
 //!   The resolved program, or UNDEFINED if not found.
-program|void resolve_program(string path)
-{
+program|void resolve_program(string path) {
   mixed val = master()->resolv(path);
   if (programp(val)) return val;
   return UNDEFINED;
@@ -205,15 +187,14 @@ program|void resolve_program(string path)
 //!
 //! @returns
 //!   Array of function symbol names.
-array(string) list_functions(object|program mod)
-{
+array(string) list_functions(object|program mod) {
   if (!mod) return ({});
-  
+
   array(string) functions = ({});
   array idx = ({});
-  
+
   catch { idx = indices(mod); };
-  
+
   foreach(idx, string sym) {
     mixed val;
     catch { val = mod[sym]; };
@@ -221,7 +202,7 @@ array(string) list_functions(object|program mod)
       functions += ({ sym });
     }
   }
-  
+
   return sort(functions);
 }
 
@@ -232,8 +213,7 @@ array(string) list_functions(object|program mod)
 //!
 //! @returns
 //!   The resolved function, or UNDEFINED if not found.
-function|void resolve_function(string path)
-{
+function|void resolve_function(string path) {
   mixed val = master()->resolv(path);
   if (functionp(val)) return val;
   return UNDEFINED;
@@ -246,15 +226,14 @@ function|void resolve_function(string path)
 //!
 //! @returns
 //!   Array of constant symbol names.
-array(string) list_constants(object|program mod)
-{
+array(string) list_constants(object|program mod) {
   if (!mod) return ({});
-  
+
   array(string) constants = ({});
   array idx = ({});
-  
+
   catch { idx = indices(mod); };
-  
+
   foreach(idx, string sym) {
     mixed val;
     catch { val = mod[sym]; };
@@ -263,7 +242,7 @@ array(string) list_constants(object|program mod)
       constants += ({ sym });
     }
   }
-  
+
   return sort(constants);
 }
 
@@ -274,15 +253,14 @@ array(string) list_constants(object|program mod)
 //!
 //! @returns
 //!   Mapping of constant name to value.
-mapping(string:mixed) get_constants_map(object|program mod)
-{
+mapping(string:mixed) get_constants_map(object|program mod) {
   if (!mod) return ([]);
-  
+
   mapping(string:mixed) result = ([]);
   array idx = ({});
-  
+
   catch { idx = indices(mod); };
-  
+
   foreach(idx, string sym) {
     mixed val;
     catch { val = mod[sym]; };
@@ -290,6 +268,6 @@ mapping(string:mixed) get_constants_map(object|program mod)
       result[sym] = val;
     }
   }
-  
+
   return result;
 }
