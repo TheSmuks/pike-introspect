@@ -4,10 +4,10 @@
 #pike __REAL_VERSION__
 
 //! Functions for producing JSON output suitable for LLM consumption.
-
-import .Discover;
-import .Describe;
-import .Search;
+//!
+//! This module inherits all functions from Discover, Describe, and Search
+//! through the parent module.pmod. Functions are accessed directly without
+//! needing explicit imports.
 
 //! Convert any value to a JSON-encodable representation.
 //!
@@ -48,7 +48,7 @@ mixed to_jsonable(mixed val) {
 //! @returns
 //!   JSON-encoded description string.
 string json_describe(mixed val) {
-  mapping desc = Describe.describe(val);
+  mapping desc = describe(val);
   mixed jsonable = to_jsonable(desc);
   return Standards.JSON.encode(jsonable);
 }
@@ -58,7 +58,7 @@ string json_describe(mixed val) {
 //! @returns
 //!   JSON-encoded environment summary.
 string json_environment() {
-  mapping env = Describe.environment_summary();
+  mapping env = environment_summary();
   return Standards.JSON.encode(to_jsonable(env));
 }
 
@@ -70,7 +70,7 @@ string json_environment() {
 //! @returns
 //!   JSON-encoded search results.
 string json_search(string pattern) {
-  mapping results = Search.search(pattern);
+  mapping results = search(pattern);
   return Standards.JSON.encode(to_jsonable(results));
 }
 
@@ -82,7 +82,7 @@ string json_search(string pattern) {
 //! @returns
 //!   JSON-encoded module description.
 string json_module(string name) {
-  mapping desc = Describe.describe_module_full(name);
+  mapping desc = describe_module_full(name);
   if (!desc) return UNDEFINED;
   return Standards.JSON.encode(to_jsonable(desc));
 }
@@ -95,9 +95,9 @@ string json_module(string name) {
 //! @returns
 //!   JSON-encoded program description, or UNDEFINED if not found.
 string json_program(string path) {
-  program|void p = Discover.resolve_program(path);
+  program|void p = resolve_program(path);
   if (!p) return UNDEFINED;
-  mapping desc = Describe.describe_program(p);
+  mapping desc = describe_program(p);
   return Standards.JSON.encode(to_jsonable(desc));
 }
 
@@ -106,7 +106,7 @@ string json_program(string path) {
 //! @returns
 //!   JSON-encoded array of module names.
 string json_list_modules() {
-  array mods = Discover.list_modules();
+  array mods = list_modules();
   return Standards.JSON.encode(mods);
 }
 
@@ -118,8 +118,8 @@ string json_list_modules() {
 //! @returns
 //!   JSON-encoded function description, or UNDEFINED if not found.
 string json_function(string path) {
-  function|void f = Discover.resolve_function(path);
+  function|void f = resolve_function(path);
   if (!f) return UNDEFINED;
-  mapping desc = Describe.describe_function(f);
+  mapping desc = describe_function(f);
   return Standards.JSON.encode(to_jsonable(desc));
 }
