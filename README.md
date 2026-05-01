@@ -1,41 +1,43 @@
 # Introspect Module for Pike
 
-## Overview
+[![CI](https://github.com/TheSmuks/pike-introspect/actions/workflows/ci.yml/badge.svg)](https://github.com/TheSmuks/pike-introspect/actions/workflows/ci.yml)
 
-The `Introspect` module provides runtime introspection and discovery capabilities for Pike programs. It is designed to help LLM agents understand the Pike runtime environment, discover available modules, programs, functions, and constants, and retrieve detailed information about any symbol.
+Runtime introspection and discovery capabilities for Pike. Designed for LLM agents to explore the Pike environment, discover modules, programs, functions, and constants.
 
 ## Installation
 
 ### Via PMP (recommended)
 
 ```bash
+# Install PMP if you haven't already
+curl -LsSf https://github.com/TheSmuks/pmp/install.sh | sh
+
+# Install Introspect
 pmp install TheSmuks/pike-introspect
 ```
 
-Then use in your Pike code:
+### Manual Installation
+
+```bash
+export PIKE_MODULE_PATH=/path/to/pike-introspect/src:$PIKE_MODULE_PATH
+```
+
+Then in your Pike code:
 
 ```pike
 import Introspect;
 
 // List all available modules
-array(string) mods = Discover.list_modules();
+array(string) mods = list_modules();
 
 // Get environment summary
-mapping env = Describe.environment_summary();
+mapping env = environment_summary();
 
 // Search for a symbol
-mapping results = Search.search("JSON");
+mapping results = search_symbols("HTTP");
 
 // Get JSON output for LLM consumption
-string json = Json.json_environment();
-```
-
-### Manual Installation
-
-Copy `src/Introspect.pmod/` to your Pike module path, or set `PIKE_MODULE_PATH`:
-
-```bash
-export PIKE_MODULE_PATH=/path/to/pike-introspect/src:$PIKE_MODULE_PATH
+string json = json_environment();
 ```
 
 ## Module Structure
@@ -48,46 +50,63 @@ import Introspect
   └── Json       - JSON output formatters for LLM agents
 ```
 
-## Quick Start
+## Quick Examples
 
-### List all importable modules
+### List Modules
 
 ```pike
 import Introspect;
-array(string) modules = Discover.list_modules();
+
+array(string) modules = list_modules();
 write("Available modules: %s\n", modules * ", ");
 ```
 
-### Describe a symbol
+### Describe a Symbol
 
 ```pike
 import Introspect;
+
 mixed symbol = master()->resolv("Stdio.FILE");
-mapping desc = Describe.describe(symbol);
+mapping desc = describe(symbol);
 write("Symbol: %O\n", desc);
 ```
 
-### Search for something
+### Search for Functions
 
 ```pike
 import Introspect;
-mapping results = Search.search("HTTP");
-write("Matching programs: %O\n", results["programs"]);
+
+mapping results = search_symbols("read");
 write("Matching functions: %O\n", results["functions"]);
 ```
 
-### Get JSON output
+### Get JSON Output
 
 ```pike
 import Introspect;
-string json = Json.json_search("file");
+
+string json = json_search("file");
 write("%s\n", json);
 ```
+
+## API Reference
+
+See [skills/pike-introspection/references/introspection-api.md](skills/pike-introspection/references/introspection-api.md) for the full API documentation.
+
+## Agent Skill
+
+This module includes an agent skill for LLM agents. Install via:
+
+```bash
+npx skills add TheSmuks/pike-introspect
+```
+
+See [skills/pike-introspection/SKILL.md](skills/pike-introspection/SKILL.md) for usage.
 
 ## Requirements
 
 - Pike 8.0 or later
-- No external dependencies
+- PMP (for dependency management) - optional but recommended
 
 ## License
 
