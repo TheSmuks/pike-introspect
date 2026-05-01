@@ -11,10 +11,9 @@
 //!
 //! @section
 
-// Inherit in specific order to ensure dependencies are resolved correctly.
-// Json.pmod is inherited first because it doesn't depend on other modules.
-// Describe, Search, and Discover have no circular dependencies.
-inherit .Json;
+// Inherit the sub-modules. In Pike's pmod system, these become part of
+// this module's namespace.
+inherit .Discover;
 inherit .Describe;
 inherit .Search;
-inherit .Discover;
+inherit .Json;

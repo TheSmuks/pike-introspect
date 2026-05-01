@@ -7,7 +7,7 @@
 //! in the Pike runtime environment.
 
 // Known stdlib module names
-private constant STD_LIBS = (<
+constant STD_LIBS = (<
   "Stdio",
   "Standards",
   "Protocols",
@@ -49,8 +49,8 @@ private constant STD_LIBS = (<
 >);
 
 // Cache for list_modules results
-private array(string) cached_modules = ({});
-private int cache_valid = 0;
+array(string) cached_modules = ({});
+int cache_valid = 0;
 
 //! List all importable modules in the current Pike environment.
 //!
