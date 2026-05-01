@@ -6,5 +6,7 @@
   "license": "MIT",
   "author": "TheSmuks",
   "repository": "github:TheSmuks/pike-introspect",
-  "dependencies": {}
+  "dependencies": {
+    "PUnit": "github.com/TheSmuks/punit-tests#v1.0.0"
+  }
 }
