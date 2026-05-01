@@ -279,8 +279,11 @@ mapping environment_summary() {
 
   mapping constants = all_constants();
 
+  // __VERSION__ is a float like 8.0.1116, convert to string
+  string ver = sprintf("%.3g", __VERSION__);
+
   return ([ 
-    "pike_version": __VERSION__,
+    "pike_version": ver,
     "module_count": sizeof(modules),
     "modules": sort(modules),
     "stdlib_modules": sort(indices(STD_LIBS)),
@@ -293,5 +296,5 @@ mapping environment_summary() {
 //! @returns
 //!   Pike version string.
 string pike_version() {
-  return __VERSION__;
+  return sprintf("%.3g", __VERSION__);
 }
