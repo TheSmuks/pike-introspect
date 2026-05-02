@@ -19,13 +19,12 @@ jobs:
 
       - name: Install PMP
         run: |
-          git clone https://github.com/TheSmuks/pmp.git ~/.pmp
-          cd ~/.pmp && git checkout v0.4.0
+          curl -LsSf https://raw.githubusercontent.com/TheSmuks/pmp/main/install.sh | sh
           echo "$HOME/.pmp/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: |
-          ~/.pmp/bin/pmp install
+          pmp install
 
       - name: Run tests
         run: |
