@@ -15,17 +15,17 @@ jobs:
 
       - name: Install Pike
         run: |
-          curl -LsSf https://pike.lysator.liu.se/pub/pike/latest-stable/install | sh
-          echo "$HOME/.local/share/pike/bin" >> $GITHUB_PATH
+          sudo apt-get update && sudo apt-get install -y pike8.0
 
       - name: Install PMP
         run: |
-          curl -LsSf https://github.com/TheSmuks/pmp/install.sh | sh
+          git clone https://github.com/TheSmuks/pmp.git ~/.pmp
+          cd ~/.pmp && git checkout v0.4.0
           echo "$HOME/.pmp/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: |
-          pmp install
+          ~/.pmp/bin/pmp install
 
       - name: Run tests
         run: |
