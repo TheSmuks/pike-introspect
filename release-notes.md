@@ -1,6 +1,4 @@
-# v1.0.0 (2026-05-02)
-
-## What's Changed
+## v1.0.0 (2026-05-02)
 
 ### Features
 - Initial stable release with full introspection API
@@ -18,5 +16,3 @@
 - Works with Pike 8.0+
 - No runtime dependencies
 - Comprehensive test suite
-
-**Full Changelog**: https://github.com/TheSmuks/pike-introspect/compare/...main
