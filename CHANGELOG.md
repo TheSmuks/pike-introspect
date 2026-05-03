@@ -12,6 +12,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Template adoption: adopt ai-project-template v0.6.0 with project infrastructure,
   CI quality gates, OMP agent framework, dev container, and reference documentation
+
+
+## [0.2.0] - 2026-05-03
+
+### Added
+
+- Source location extraction in `describe_program()`, `describe_function()`, and
+  `describe_object()` with `source_file` and optional `source_line` fields (#1)
+- Inheritance chain traversal in `describe_program()` with `inherits`,
+  `inherited_methods`, and `inherited_constants` fields (#2)
+- New `resolve_symbol()` function in Discover.pmod for cross-file identifier
+  resolution with type and location info (#3)
+- Methods and constants in `describe_program()` now return as array of mappings
+  with `name` and location info
+
+
 ## [0.1.0] - 2026-05-01
 
 ### Added
