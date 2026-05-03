@@ -5,13 +5,19 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install Pike
         run: |
@@ -20,11 +26,10 @@ jobs:
       - name: Install PMP
         run: |
           curl -LsSf https://raw.githubusercontent.com/TheSmuks/pmp/main/install.sh | sh
-          echo "$HOME/.pmp/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: |
-          pmp install
+          pmp install .
 
       - name: Run tests
         run: |
