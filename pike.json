@@ -1,6 +1,6 @@
 {
   "name": "Introspect",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Pike runtime introspection module for LLM agents",
   "keywords": ["pike", "introspection", "llm", "discovery"],
   "license": "MIT",
