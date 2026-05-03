@@ -3,6 +3,25 @@
 
 #pike __REAL_VERSION__
 
+//! Parse a source location string from Program.defined() or Function.defined().
+//!
+//! @param def
+//!   Definition string like "/path/to/file.pike:42" or just "/path/to/file.pike"
+//!
+//! @returns
+//!   Mapping with "source_file" and optionally "source_line"
+private mapping _parse_source_location(string def) {
+  if (!def || def == "")
+    return (["source_file": UNDEFINED]);
+
+  string file;
+  int line;
+  if (sscanf(def, "%s:%d", file, line) == 2) {
+    return (["source_file": file, "source_line": line]);
+  }
+  return (["source_file": def]);
+}
+
 //! Functions for describing symbols in detail.
 
 //! Get a type string for any value.
@@ -127,11 +146,24 @@ mapping describe_float(float f) {
 //!   The program to describe.
 //!
 //! @returns
-//!   Mapping with program information.
+//!   Mapping with program information including source location and inheritance.
 mapping describe_program(program p) {
   string name = sprintf("%O", p);
-  array(string) methods = ({});
-  array(string) constants = ({});
+
+  // Get source location
+  string source_def;
+  catch { source_def = Program.defined(p); };
+  mapping source_loc = _parse_source_location(source_def || "");
+
+  array(mapping) methods = ({});
+  array(mapping) constants = ({});
+  array(mapping) inherits = ({});
+  array(string) inherited_methods = ({});
+  array(string) inherited_constants = ({});
+
+  // Collect our own method names for filtering inherited methods later
+  array(string) own_methods = ({});
+  array(string) own_constants = ({});
 
   // Try to enumerate members by creating an instance
   object inst = UNDEFINED;
@@ -145,21 +177,129 @@ mapping describe_program(program p) {
       mixed v;
       catch { v = inst[sym]; };
       if (callablep(v)) {
-        methods += ({ sym });
+        // Get method source location
+        string method_def;
+        catch { method_def = Function.defined(v); };
+        mapping method_loc = _parse_source_location(method_def || "");
+        methods += ({ (["name": sym]) + method_loc });
+        own_methods += ({ sym });
       } else if (!functionp(v) && !programp(v) && !objectp(v)) {
-        constants += ({ sym });
+        // Get constant source location
+        string const_def;
+        catch { const_def = Program.defined(p, sym); };
+        mapping const_loc = _parse_source_location(const_def || "");
+        constants += ({ (["name": sym]) + const_loc });
+        own_constants += ({ sym });
       }
     }
 
     destruct(inst);
   }
 
-  return ([ 
+  // Collect inheritance information
+  array parent_progs = ({});
+  catch { parent_progs = Program.inherit_list(p); };
+
+  foreach(parent_progs, mixed parent_info) {
+    program parent_prog;
+    string parent_name;
+
+    if (mappingp(parent_info)) {
+      parent_prog = parent_info["program"];
+      parent_name = parent_info["name"] || sprintf("%O", parent_prog);
+    } else if (programp(parent_info)) {
+      parent_prog = parent_info;
+      parent_name = sprintf("%O", parent_prog);
+    }
+
+    if (!parent_prog) continue;
+
+    // Get parent source location
+    string parent_def;
+    catch { parent_def = Program.defined(parent_prog); };
+    mapping parent_loc = _parse_source_location(parent_def || "");
+
+    inherits += ({ (["name": parent_name]) + parent_loc });
+
+    // Get inherited methods and constants from parent
+    object parent_inst = UNDEFINED;
+    catch { parent_inst = parent_prog(); };
+
+    if (parent_inst) {
+      array parent_idx = ({});
+      catch { parent_idx = indices(parent_inst); };
+
+      foreach(parent_idx, string sym) {
+        mixed v;
+        catch { v = parent_inst[sym]; };
+        if (callablep(v) && !has_value(own_methods, sym)) {
+          inherited_methods |= ({ sym });
+        } else if (!functionp(v) && !programp(v) && !objectp(v) && !has_value(own_constants, sym)) {
+          inherited_constants |= ({ sym });
+        }
+      }
+
+      destruct(parent_inst);
+    }
+  }
+
+  // Sort methods and constants by name (extract names, sort, rebuild)
+  array(string) method_names = sort(map(methods, lambda(mapping m) { return m["name"]; }));
+  array(mapping) sorted_methods = ({});
+  foreach(method_names, string n) {
+    foreach(methods, mapping m) {
+      if (m["name"] == n) {
+        sorted_methods += ({ m });
+        break;
+      }
+    }
+  }
+
+  array(string) const_names = sort(map(constants, lambda(mapping m) { return m["name"]; }));
+  array(mapping) sorted_constants = ({});
+  foreach(const_names, string n) {
+    foreach(constants, mapping m) {
+      if (m["name"] == n) {
+        sorted_constants += ({ m });
+        break;
+      }
+    }
+  }
+
+  // Build the result mapping
+  mapping result = ([ 
     "name": name,
     "type": "program",
-    "methods": sort(methods),
-    "constants": sort(constants)
+    "methods": sorted_methods,
+    "constants": sorted_constants
   ]);
+
+  // Add source location if available
+  if (source_loc["source_file"])
+    result["source_file"] = source_loc["source_file"];
+  if (source_loc["source_line"])
+    result["source_line"] = source_loc["source_line"];
+
+  // Add inheritance information
+  if (sizeof(inherits) > 0) {
+    array(string) inherit_names = sort(map(inherits, lambda(mapping m) { return m["name"]; }));
+    array(mapping) sorted_inherits = ({});
+    foreach(inherit_names, string n) {
+      foreach(inherits, mapping m) {
+        if (m["name"] == n) {
+          sorted_inherits += ({ m });
+          break;
+        }
+      }
+    }
+    result["inherits"] = sorted_inherits;
+  }
+  if (sizeof(inherited_methods) > 0)
+    result["inherited_methods"] = sort(inherited_methods);
+  if (sizeof(inherited_constants) > 0)
+    result["inherited_constants"] = sort(inherited_constants);
+
+  return result;
 }
 
 //! Describe a function in detail.
@@ -168,15 +308,28 @@ mapping describe_program(program p) {
 //!   The function to describe.
 //!
 //! @returns
-//!   Mapping with function information.
+//!   Mapping with function information including source location.
 mapping describe_function(function f) {
   string name = sprintf("%O", f);
 
-  return ([ 
+  // Get source location
+  string source_def;
+  catch { source_def = Function.defined(f); };
+  mapping source_loc = _parse_source_location(source_def || "");
+
+  mapping result = ([ 
     "name": name,
     "type": "function",
     "signature": name
   ]);
+
+  // Add source location if available
+  if (source_loc["source_file"])
+    result["source_file"] = source_loc["source_file"];
+  if (source_loc["source_line"])
+    result["source_line"] = source_loc["source_line"];
+
+  return result;
 }
 
 //! Describe an object in detail.
@@ -185,11 +338,16 @@ mapping describe_function(function f) {
 //!   The object to describe.
 //!
 //! @returns
-//!   Mapping with object information.
+//!   Mapping with object information including source location.
 mapping describe_object(object o) {
   program p = object_program(o);
   array(string) methods = ({});
   array(string) variables = ({});
+
+  // Get source location from the program
+  string source_def;
+  catch { source_def = Program.defined(p); };
+  mapping source_loc = _parse_source_location(source_def || "");
 
   array idx = ({});
   catch { idx = indices(o); };
@@ -204,12 +362,20 @@ mapping describe_object(object o) {
     }
   }
 
-  return ([ 
+  mapping result = ([ 
     "program": sprintf("%O", p),
     "type": "object",
     "methods": sort(methods),
     "variables": sort(variables)
   ]);
+
+  // Add source location if available
+  if (source_loc["source_file"])
+    result["source_file"] = source_loc["source_file"];
+  if (source_loc["source_line"])
+    result["source_line"] = source_loc["source_line"];
+
+  return result;
 }
 
 //! Describe a module in full detail.
