@@ -26,6 +26,7 @@ jobs:
       - name: Install PMP
         run: |
           curl -LsSf https://raw.githubusercontent.com/TheSmuks/pmp/main/install.sh | sh
+          echo "/home/runner/.pmp/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: |
