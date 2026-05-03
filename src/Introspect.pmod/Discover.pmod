@@ -271,3 +271,103 @@ mapping(string:mixed) get_constants_map(object|program mod) {
 
   return result;
 }
+
+//! Resolve a qualified symbol path and return detailed information about it.
+//!
+//! @param name
+//!   Qualified symbol path like "Stdio.FakeFile", "Stdio.read_file", or "Stdio"
+//!
+//! @returns
+//!   Mapping with symbol information (name, kind, source_location), or UNDEFINED if not found.
+mapping resolve_symbol(string name) {
+  mixed val;
+  catch { val = master()->resolv(name); };
+  
+  if (undefinedp(val) || !val)
+    return UNDEFINED;
+
+  string kind;
+  if (programp(val)) {
+    kind = "class";
+  } else if (functionp(val)) {
+    kind = "function";
+  } else if (objectp(val)) {
+    kind = "module";
+  } else {
+    kind = "variable";
+  }
+
+  mapping result = (["name": name, "kind": kind]);
+
+  // Source location for programs
+  if (programp(val)) {
+    string def;
+    catch { def = Program.defined(val); };
+    if (def && def != "") {
+      string file;
+      int line;
+      if (sscanf(def, "%s:%d", file, line) == 2) {
+        result["source_file"] = file;
+        result["source_line"] = line;
+      } else {
+        result["source_file"] = def;
+      }
+    }
+    result["program"] = val;
+  }
+  // Source location for functions
+  else if (functionp(val)) {
+    string def;
+    catch { def = Function.defined(val); };
+    if (def && def != "") {
+      string file;
+      int line;
+      if (sscanf(def, "%s:%d", file, line) == 2) {
+        result["source_file"] = file;
+        result["source_line"] = line;
+      } else {
+        result["source_file"] = def;
+      }
+    }
+  }
+  // For modules (objects), get program location
+  else if (objectp(val)) {
+    program p = object_program(val);
+    if (p) {
+      string def;
+      catch { def = Program.defined(p); };
+      if (def && def != "") {
+        result["source_file"] = def;
+      }
+      result["program"] = p;
+    }
+  }
+  // For variables/constants, try to find definition in a known program
+  else {
+    // Try to find which program defines this constant
+    // Split name and try to resolve the parent program
+    array parts = name / ".";
+    if (sizeof(parts) > 1) {
+      string parent_path = parts[..<1] * ".";
+      mixed parent;
+      catch { parent = master()->resolv(parent_path); };
+      if (programp(parent)) {
+        string member = parts[-1];
+        string def;
+        catch { def = Program.defined(parent, member); };
+        if (def && def != "") {
+          string file;
+          int line;
+          if (sscanf(def, "%s:%d", file, line) == 2) {
+            result["source_file"] = file;
+            result["source_line"] = line;
+          } else {
+            result["source_file"] = def;
+          }
+        }
+      }
+    }
+  }
+
+  return result;
+}
