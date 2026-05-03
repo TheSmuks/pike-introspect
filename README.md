@@ -1,5 +1,7 @@
 # Introspect - Pike Runtime Introspection Module
 
+[![Template](https://img.shields.io/badge/Template-v0.6.0-blue?style=flat-square&logo=github)](https://github.com/TheSmuks/ai-project-template)
+
 [![CI](https://github.com/TheSmuks/pike-introspect/actions/workflows/ci.yml/badge.svg)](https://github.com/TheSmuks/pike-introspect/actions/workflows/ci.yml)
 
 Runtime introspection and discovery capabilities for Pike. Discover modules, programs, functions, and constants. Designed for LLM agents to explore the Pike environment.

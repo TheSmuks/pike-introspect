@@ -1,0 +1,29 @@
+{
+  "name": "Pike Introspect Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/common-utils:2": {}
+  },
+  "postCreateCommand": "curl -LsSf https://raw.githubusercontent.com/TheSmuks/pmp/main/install.sh | sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "github.vscode-github-actions",
+        "editorconfig.editorconfig",
+        "github.copilot"
+      ],
+      "settings": {
+        "files.eol": "\n",
+        "files.insertFinalNewline": true,
+        "files.trimTrailingWhitespace": true,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": null,
+        "files.associations": {
+          "*.pike": "pike",
+          "*.pmod": "pike"
+        }
+      }
+    }
+  }
+}

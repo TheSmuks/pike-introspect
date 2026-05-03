@@ -92,3 +92,7 @@ All file paths in this repo use POSIX conventions (forward slashes, no drive let
 - `pike -e 'import Introspect; write("%O\n", Describe.environment_summary());'`
 - `pike -e 'import Introspect; write("%s\n", Json.json_environment());'`
 - `sh tests/pike_tests.sh`
+
+## Template Version
+
+Scaffolded from `ai-project-template` version **0.6.0**.
