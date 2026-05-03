@@ -1,0 +1,16 @@
+## v0.2.0 (2026-05-03)
+
+### Features
+
+- **Source location extraction** (#1)
+  - `describe_program()`, `describe_function()`, and `describe_object()` now include `source_file` and optional `source_line` fields
+  - Methods and constants returned as array of mappings with location info
+
+- **Inheritance chain traversal** (#2)
+  - `describe_program()` now includes `inherits` array with parent class info
+  - `inherited_methods` and `inherited_constants` fields for parent class members
+
+- **New `resolve_symbol()` function** (#3)
+  - Cross-file identifier resolution with type and location info
+  - Returns `kind` ("class", "function", "module", "variable")
+  - Includes `source_file` and `source_line` for code locations
